@@ -1,0 +1,20 @@
+<!-- #define {title, menuMap, contentPath, content} -->
+<html>
+	<head>
+		<title>${title}</title>
+		<meta name="title" value="${title}"/>
+		<link href="${u.url('rsc/styles.css')}"></link>
+	</head>
+	<body>
+		<!-- #include menu {menuMap} -->
+		<div id="main">
+			<!-- #include contentPath content -->
+		</div>
+		<!-- #include #footer -->
+		<script src="${u.url('rsc/scripts.js')}"></script>
+	</body>
+	<!-- #define footer -->
+	<div class="footer">
+		<div/>
+	</div>
+</html>

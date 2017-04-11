@@ -1,0 +1,10 @@
+<!-- #define {map} -->
+<!-- #set selected, ${map.selectedOption} -->
+<!-- ${selected = map.selectedOption} -->
+<div class="menu">
+	<!-- #for item, ${map.items} -->
+	<!-- #set selClass, ${item.id == selected ? 'selected':''} -->
+	${selClass = item.id == selected ? 'selected':''}
+	<div class="item ${selClass}" href="${item.href}">${item.text}</div>
+	<!-- #end -->
+</div>
