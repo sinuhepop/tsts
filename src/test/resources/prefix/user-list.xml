@@ -1,20 +1,22 @@
-<!-- #define {users} -->
-<div class="list">
-	<!-- ## A comment -->
-	<!-- #for user, ${users.asList()}, it -->
-	<div class="user ${it.odd?'odd':''}">
-		<!-- #if !user.active -->
-		<span>${m['not.visible']}</span>
-		<!-- #elseif user.age > 18 -->
-		<span>${m['adult']({user.name})}</span>
-		<div class="bio">
-			<!-- #direct -->
-			${user.bio}
-			<!-- #end -->
-		</div>
-		<!-- #else -->
-		<span>${m['child']}</span>
-		<!-- #end -->
+<:def params="users">
+	<div class="list">
+		<:for user="${users.asList()}" it="${iterator}">
+			<div class="user ${it.odd?'odd':''}">
+				<:switch>
+					<:case if="${!user.active}">
+						<span>${m['not.visible']}</span>
+					</:case>
+					<:case if="${user.age > 18}">
+						<span>${m['adult']({user.name})}</span>
+						<div class="bio">
+							<:direct>${user.bio}</:direct>
+						</div>
+					</:case>
+					<:case>
+						<span>${m['child']}</span>
+					</:case>
+				</:switch>
+			</div>
+		</:for>
 	</div>
-	<!-- #end -->
-</div>
+</:def>

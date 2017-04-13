@@ -1,22 +1,22 @@
-<x:def vars="title, menuMap, contentPath, content">
+<:def params="String title | Map[String, Object] menuMap | String contentPath | String content">
 	<html>
 		<head>
-			<title>${title}</title>
-			<meta name="title" value="${title}"/>
-			<link href="${u.url('rsc/styles.css')}"></link>
+			<title>#{title}</title>
+			<meta name="title" value="#{title}"/>
+			<link href='#{u:url("rsc/styles.css")}'></link>
 		</head>
 		<body>
-			<!-- #include menu {menuMap} -->
+			<:include src="menu" model="menuMap"/>
 			<div id="main">
-				<!-- #include contentPath content -->
+				<:include src="{contentPath}" model="content"/>
 			</div>
-			<!-- #include #footer -->
-			<script src="${u.url('rsc/scripts.js')}"></script>
+			<:include src="#footer"/>
+			<script src="{u.url('rsc/scripts.js')}"></script>
 		</body>
 	</html>
-</x:def>
-<!-- <x:def name="footer"> -->
-<!-- <div class="footer"> -->
-<!-- <div/> -->
-<!-- </div> -->
-<!-- </x:def> -->
+</:def>
+<:def name="footer">
+	<div class="footer">
+		<div/>
+	</div>
+</:def>
