@@ -24,7 +24,7 @@ public class XmlUtils {
 		return xml.getDocumentElement().getChildNodes();
 	}
 
-	public static Stream<Node> read(NodeList nodes) {
+	public static Stream<Node> stream(NodeList nodes) {
 		return IntStream.range(0, nodes.getLength()).mapToObj(i -> nodes.item(i));
 	}
 

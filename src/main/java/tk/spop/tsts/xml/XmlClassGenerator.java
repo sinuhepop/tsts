@@ -1,32 +1,42 @@
 package tk.spop.tsts.xml;
 
-import static com.helger.jcodemodel.JMod.PUBLIC;
-import static com.helger.jcodemodel.JMod.STATIC;
-
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.springframework.expression.Expression;
+import org.springframework.expression.ParserContext;
+import org.springframework.expression.common.CompositeStringExpression;
+import org.springframework.expression.common.LiteralExpression;
+import org.springframework.expression.spel.standard.SpelExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
-import com.helger.jcodemodel.AbstractJType;
 import com.helger.jcodemodel.JCodeModel;
 import com.helger.jcodemodel.JDefinedClass;
 import com.helger.jcodemodel.writer.OutputStreamCodeWriter;
 
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.val;
 import tk.spop.tsts.ClassGenerator;
+import tk.spop.tsts.CompilationContext;
 import tk.spop.tsts.Constants;
-import tk.spop.tsts.ExecutionContext;
-import tk.spop.tsts.model.Parameter;
-import tk.spop.tsts.util.StringUtils;
+import tk.spop.tsts.directive.DirectiveRegistry;
+import tk.spop.tsts.model.ImportDefinition;
 
+@Setter
 public class XmlClassGenerator implements ClassGenerator {
-	
-	
+
+	private ImportDefinition imports;
+	private DirectiveRegistry directives;
+
+	private final SpelExpressionParser parser = new SpelExpressionParser();
 
 	@Override
 	@SneakyThrows
@@ -35,15 +45,17 @@ public class XmlClassGenerator implements ClassGenerator {
 		val nodes = XmlUtils.read(content);
 
 		val cm = new JCodeModel();
-		val pkg = cm._package(path.getParent().toString());
+		val pkg = cm._package(path.getParent().toString().replace('/', '.').replace('\\', '.'));
 		val clss = pkg._class(path.getFileName().toString());
-		
 
-		XmlUtils.read(nodes) //
-				.flatMap(n -> n instanceof Element ? Stream.of((Element) n) : Stream.empty()) //
-				.forEach(el -> generateMethod(clss, el));
+		val ctx = new CompilationContext();
+		ctx.setGenerator(this);
+		ctx.setCurrentClass(clss);
+		ctx.setImports(imports.clone());
 
-		return getSource(clss);
+		processList(ctx, nodes);
+
+		return addImportDefinitions(getSource(clss));
 	}
 
 	@SneakyThrows
@@ -55,40 +67,76 @@ public class XmlClassGenerator implements ClassGenerator {
 	}
 
 	@SneakyThrows
-	protected void generateMethod(JDefinedClass clss, Element def) {
+	protected String addImportDefinitions(String source) {
+		return imports == null ? source : source.replaceFirst(";", ";\n\n" + imports.toString());
+	}
 
-		String name = def.getAttribute(Constants.DEF_NAME_ATTRIBUTE);
-		if (name.isEmpty()) {
-			name = Constants.DEF_DEFAULT_NAME;
-		}
-
-		val method = clss.method(PUBLIC, clss.owner().VOID, name);
-		method.param(ExecutionContext.class, Constants.CONTEXT_VAR);
-
-		val params = parseParams(def.getAttribute(Constants.DEF_PARAMS_ATTRIBUTE));
-		if (!params.isEmpty()) {
-			val paramClass = clss._class(PUBLIC | STATIC,
-					StringUtils.capitalizeFirst(name) + Constants.PARAMS_CLASS_SUFFIX);
-			for (val p : params) {
-				val type = clss.owner().directClass(p.getType());
-				paramClass.field(PUBLIC, type, p.getName());
-			}
-			method.param(paramClass, Constants.ARGS_VAR);
+	public void processList(CompilationContext ctx, NodeList list) {
+		for (int i = 0; i < list.getLength(); i++) {
+			processNode(ctx, list.item(i));
 		}
 	}
 
-	protected List<Parameter> parseParams(String params) {
-		val list = new ArrayList<Parameter>();
-		if (!params.isEmpty()) {
-			for (String p : params.split("\\|")) {
-				p = p.trim();
-				val i = p.lastIndexOf(' ');
-				val type = p.substring(0, i).replace('[', '<').replace(']', '>');
-				val name = p.substring(i);
-				list.add(new Parameter(type.trim(), name.trim()));
+	public void processNode(CompilationContext ctx, Node node) {
+		if (node.getNodeType() == Node.ELEMENT_NODE) {
+			val key = parseDirectiveKey(node.getNodeName());
+			if (key != null) {
+				processDirective(ctx, (Element) node);
+			} else {
+				processElement(ctx, (Element) node);
 			}
+		} else if (node.getNodeType() == Node.TEXT_NODE) {
+			processText(ctx, (Text) node);
 		}
-		return list;
+	}
+
+	public void processDirective(CompilationContext ctx, Element node) {
+		val key = parseDirectiveKey(node.getNodeName());
+		val directive = directives.get(key);
+		if (directive != null) {
+			directive.run(ctx, node);
+		}
+	}
+
+	public void processElement(CompilationContext ctx, Element node) {
+		ctx.append("<" + node.getTagName());
+		for (val attr : getAttributes(node).entrySet()) {
+			ctx.append(" " + attr.getKey() + "='" + attr.getValue().replace("'", "\\'") + "'");
+		}
+		ctx.append(">");
+		processList(ctx, node.getChildNodes());
+		ctx.append("</" + node.getTagName() + ">");
+	}
+
+	public void processText(CompilationContext ctx, Text node) {
+		val exp = parser.parseExpression(node.getTextContent(), ParserContext.TEMPLATE_EXPRESSION);
+		processExpression(ctx, exp);
+	}
+
+	protected void processExpression(CompilationContext ctx, Expression exp) {
+		if (exp instanceof CompositeStringExpression) {
+			for (val sub : ((CompositeStringExpression) exp).getExpressions()) {
+				processExpression(ctx, sub);
+			}
+		} else if (exp instanceof LiteralExpression) {
+			val literal = ((LiteralExpression) exp).getExpressionString();
+			ctx.append(literal);
+		} else {
+			ctx.flush();
+			val javaExp = ((SpelExpression) exp).getExpressionString();
+			ctx.getCurrentBlock().directStatement("ctx.writeText(args." + javaExp + ");");
+		}
+	}
+
+	public String parseDirectiveKey(String nodeName) {
+		return nodeName.startsWith(":") ? nodeName.substring(1) : null;
+	}
+
+	public Map<String, String> getAttributes(Element node) {
+		val map = node.getAttributes();
+		return IntStream.range(0, map.getLength()) //
+				.mapToObj(i -> map.item(i)) //
+				.collect(Collectors.toMap(Node::getNodeName, Node::getNodeValue));
 	}
 
 }

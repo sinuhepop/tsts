@@ -24,15 +24,16 @@ public class ExecutionContext {
 	// print options
 
 	public void writeAttribute(String name, Object value) {
-
+		System.out.print(" " + name + "='" + value + "'");
 	}
 
 	public void writeText(Object text) {
+		System.out.print(text);
 
 	}
 
 	public void writeUnparsed(Object content) {
-
+		System.out.print(content);
 	}
 
 	@SneakyThrows
