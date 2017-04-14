@@ -1,4 +1,4 @@
-package html
+package kotlin.html
 
 fun result(args: Array<String>) =
 		html {
