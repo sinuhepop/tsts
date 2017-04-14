@@ -27,5 +27,7 @@ fun result(args: Array<String>) =
 					for (arg in args)
 						+arg
 				}
+				
+				
 			}
 		}
