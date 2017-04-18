@@ -1,11 +1,10 @@
 package tk.spop.tsts.directive;
 
-import org.w3c.dom.Element;
-
 import lombok.SneakyThrows;
 import lombok.val;
 import tk.spop.tsts.CompilationContext;
 import tk.spop.tsts.Constants;
+import tk.spop.tsts.model.ast.AstElement;
 import tk.spop.tsts.util.StringUtils;
 import tk.spop.tsts.xml.XmlUtils;
 
@@ -13,12 +12,12 @@ public class IncludeDirective implements Directive {
 
 	@Override
 	@SneakyThrows
-	public void run(CompilationContext ctx, Element node) {
+	public void run(CompilationContext ctx, AstElement node) {
 
 		ctx.flush();
 
 		val templateVariable = ctx.newVariable("template");
-		String src = node.getAttribute("src");
+		String src = node.getAttributes().get("src");
 
 		val macoqui = src.indexOf('#');
 		val template = macoqui == 0 ? ctx.getCurrentClass().name() //

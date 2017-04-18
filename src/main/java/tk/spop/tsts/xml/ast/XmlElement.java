@@ -2,8 +2,6 @@ package tk.spop.tsts.xml.ast;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -17,9 +15,7 @@ import tk.spop.tsts.xml.XmlUtils;
 public class XmlElement implements XmlNode, AstElement {
 
 	private final Element element;
-
-	@Getter
-	private final boolean directive;
+	private final XmlNodeBuilder builder;
 
 	@Getter(lazy = true)
 	private final String name = element.getNodeName();
@@ -29,10 +25,11 @@ public class XmlElement implements XmlNode, AstElement {
 
 	@Override
 	public List<AstNode> getChildren() {
-		return XmlUtils.stream(element.getChildNodes()) //
-				.map(XmlNode::wrap) //
-				.filter(Objects::nonNull) //
-				.collect(Collectors.toList());
+		return builder.build(element.getChildNodes());
+	}
+
+	public boolean isDirective() {
+		return false;
 	}
 
 }

@@ -6,25 +6,26 @@ import static com.helger.jcodemodel.JMod.STATIC;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.w3c.dom.Element;
-
 import lombok.SneakyThrows;
 import lombok.val;
 import tk.spop.tsts.CompilationContext;
 import tk.spop.tsts.Constants;
 import tk.spop.tsts.ExecutionContext;
 import tk.spop.tsts.model.Parameter;
+import tk.spop.tsts.model.ast.AstElement;
 import tk.spop.tsts.util.StringUtils;
 
 public class DefDirective implements Directive {
 
 	@Override
 	@SneakyThrows
-	public void run(CompilationContext ctx, Element node) {
+	public void run(CompilationContext ctx, AstElement element) {
 
 		ctx.flush();
 
-		String name = node.getAttribute(Constants.DEF_NAME_ATTRIBUTE);
+		val attrs = element.getAttributes();
+
+		String name = attrs.get(Constants.DEF_NAME_ATTRIBUTE);
 		if (name.isEmpty()) {
 			name = Constants.DEF_DEFAULT_NAME;
 		}
@@ -34,7 +35,7 @@ public class DefDirective implements Directive {
 		method.param(ExecutionContext.class, Constants.CONTEXT_VAR);
 		val body = method.body();
 
-		val params = parseParams(node.getAttribute(Constants.DEF_PARAMS_ATTRIBUTE));
+		val params = parseParams(attrs.get(Constants.DEF_PARAMS_ATTRIBUTE));
 		if (!params.isEmpty()) {
 
 			val paramClass = clss._class(PUBLIC | STATIC,
@@ -51,7 +52,7 @@ public class DefDirective implements Directive {
 		}
 
 		ctx.setCurrentBlock(body);
-		ctx.getGenerator().processList(ctx, node.getChildNodes());
+		ctx.getGenerator().processList(ctx, element.getChildren());
 
 		ctx.flush();
 	}

@@ -13,12 +13,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
 import tk.spop.tsts.model.ImportDefinition;
-import tk.spop.tsts.xml.XmlClassGenerator;
 
 @Data
 public class CompilationContext {
 
-	private XmlClassGenerator generator;
+	private ClassGenerator generator;
 
 	private ImportDefinition imports;
 	private Map<String, Object> attributes;
