@@ -6,9 +6,10 @@
 			<link href='#{u:url("rsc/styles.css")}'></link>
 		</head>
 		<body>
-			<:include src="menu" model="menuMap" />
+			#{tk.spop.tsts.util.StringUtils.capitalizeFirst(title)}
+			<:include src="prefix/menu" _map="menuMap" />
 			<div id="main">
-				<:include src="#{contentPath}" model="content" />
+				<!-- <:include src="#{contentPath}" model="content" /> -->
 			</div>
 			<:include src="#footer" />
 			<script src="#{u:url('rsc/scripts.js')}"></script>

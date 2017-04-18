@@ -1,5 +1,6 @@
 package tk.spop.tsts;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +22,7 @@ public class CompilationContext {
 
 	private ImportDefinition imports;
 	private Map<String, Object> attributes;
-	private Set<String> variables;
+	private Set<String> variables = new HashSet<>();
 
 	private JDefinedClass currentClass;
 	private JBlock currentBlock;
@@ -44,5 +45,19 @@ public class CompilationContext {
 			currentBlock.directStatement("ctx.writeUnparsed(\"" + s + "\");");
 		}
 		currentStatic = new StringBuilder();
+	}
+
+	public void direct(String statement) {
+		currentBlock.directStatement(statement);
+	}
+
+	public String newVariable(String prefix) {
+		int i = 0;
+		String v;
+		do {
+			v = "_" + prefix + "_" + i++;
+		} while (variables.contains(v));
+		variables.add(v);
+		return v;
 	}
 }

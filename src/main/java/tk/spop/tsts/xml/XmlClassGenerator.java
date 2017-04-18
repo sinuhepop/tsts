@@ -2,9 +2,6 @@ package tk.spop.tsts.xml;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.springframework.expression.Expression;
 import org.springframework.expression.ParserContext;
@@ -92,6 +89,12 @@ public class XmlClassGenerator implements ClassGenerator {
 
 	public void processDirective(CompilationContext ctx, Element node) {
 		val key = parseDirectiveKey(node.getNodeName());
+		
+		if (ctx.getCurrentBlock() != null) {
+			ctx.getCurrentBlock().directStatement("");
+			ctx.getCurrentBlock().addSingleLineComment(key + " " + XmlUtils.getAttributes(node));
+		}
+		
 		val directive = directives.get(key);
 		if (directive != null) {
 			directive.run(ctx, node);
@@ -100,7 +103,7 @@ public class XmlClassGenerator implements ClassGenerator {
 
 	public void processElement(CompilationContext ctx, Element node) {
 		ctx.append("<" + node.getTagName());
-		for (val attr : getAttributes(node).entrySet()) {
+		for (val attr : XmlUtils.getAttributes(node).entrySet()) {
 			ctx.append(" " + attr.getKey() + "='" + attr.getValue().replace("'", "\\'") + "'");
 		}
 		ctx.append(">");
@@ -124,19 +127,12 @@ public class XmlClassGenerator implements ClassGenerator {
 		} else {
 			ctx.flush();
 			val javaExp = ((SpelExpression) exp).getExpressionString();
-			ctx.getCurrentBlock().directStatement("ctx.writeText(args." + javaExp + ");");
+			ctx.getCurrentBlock().directStatement("ctx.writeText(" + javaExp + ");");
 		}
 	}
 
 	public String parseDirectiveKey(String nodeName) {
 		return nodeName.startsWith(":") ? nodeName.substring(1) : null;
-	}
-
-	public Map<String, String> getAttributes(Element node) {
-		val map = node.getAttributes();
-		return IntStream.range(0, map.getLength()) //
-				.mapToObj(i -> map.item(i)) //
-				.collect(Collectors.toMap(Node::getNodeName, Node::getNodeValue));
 	}
 
 }

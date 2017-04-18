@@ -32,19 +32,25 @@ public class DefDirective implements Directive {
 		val clss = ctx.getCurrentClass();
 		val method = clss.method(PUBLIC, clss.owner().VOID, name);
 		method.param(ExecutionContext.class, Constants.CONTEXT_VAR);
+		val body = method.body();
 
 		val params = parseParams(node.getAttribute(Constants.DEF_PARAMS_ATTRIBUTE));
 		if (!params.isEmpty()) {
+
 			val paramClass = clss._class(PUBLIC | STATIC,
 					StringUtils.capitalizeFirst(name) + Constants.PARAMS_CLASS_SUFFIX);
 			for (val p : params) {
 				val type = clss.owner().directClass(p.getType());
 				paramClass.field(PUBLIC, type, p.getName());
+
+				// TODO: no direct statements
+				body.directStatement(
+						p.getType() + " " + p.getName() + " = " + Constants.ARGS_VAR + "." + p.getName() + ";");
 			}
 			method.param(paramClass, Constants.ARGS_VAR);
 		}
 
-		ctx.setCurrentBlock(method.body());
+		ctx.setCurrentBlock(body);
 		ctx.getGenerator().processList(ctx, node.getChildNodes());
 
 		ctx.flush();

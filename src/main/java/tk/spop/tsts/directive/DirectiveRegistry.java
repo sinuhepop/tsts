@@ -15,9 +15,10 @@ public class DirectiveRegistry {
 	public Directive get(String key) {
 		return map.get(key);
 	}
-	
+
 	public static DirectiveRegistry getDefault() {
 		return new DirectiveRegistry() //
-				.add("def", new DefDirective());
+				.add("def", new DefDirective()) //
+				.add("include", new IncludeDirective());
 	}
 }
