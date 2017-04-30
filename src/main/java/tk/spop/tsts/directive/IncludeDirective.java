@@ -6,7 +6,6 @@ import tk.spop.tsts.CompilationContext;
 import tk.spop.tsts.Constants;
 import tk.spop.tsts.model.ast.AstElement;
 import tk.spop.tsts.util.StringUtils;
-import tk.spop.tsts.xml.XmlUtils;
 
 public class IncludeDirective implements Directive {
 
@@ -27,7 +26,7 @@ public class IncludeDirective implements Directive {
 
 		ctx.direct(template + " " + templateVariable + " = ctx.getTemplate(" + template + ".class);");
 
-		val args = XmlUtils.getAttributes(node, true);
+		val args = node.getAttributes(); // TODO: Only _xxx
 		if (args.isEmpty()) {
 			ctx.direct(templateVariable + "." + method + "(ctx);");
 

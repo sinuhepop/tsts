@@ -23,7 +23,6 @@ import tk.spop.tsts.model.ImportDefinition;
 import tk.spop.tsts.model.ast.AstElement;
 import tk.spop.tsts.model.ast.AstNode;
 import tk.spop.tsts.model.ast.AstText;
-import tk.spop.tsts.xml.XmlUtils;
 
 @Setter
 public abstract class AbstractClassGenerator implements ClassGenerator {
@@ -33,11 +32,13 @@ public abstract class AbstractClassGenerator implements ClassGenerator {
 
 	private final SpelExpressionParser parser = new SpelExpressionParser();
 
+	protected abstract List<AstNode> getNodes(String content);
+
 	@Override
 	@SneakyThrows
 	public String generate(Path path, String content) {
 
-		val nodes = XmlUtils.read(content);
+		val nodes = getNodes(content);
 
 		val cm = new JCodeModel();
 		val pkg = cm._package(path.getParent().toString().replace('/', '.').replace('\\', '.'));
