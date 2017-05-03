@@ -25,20 +25,19 @@ import tk.spop.tsts.model.ast.AstNode;
 import tk.spop.tsts.model.ast.AstText;
 
 @Setter
-public abstract class AbstractClassGenerator implements ClassGenerator {
+public class DefaultClassGenerator implements ClassGenerator {
 
 	private ImportDefinition imports;
 	private DirectiveRegistry directives;
+	private AstBuilder builder;
 
 	private final SpelExpressionParser parser = new SpelExpressionParser();
-
-	protected abstract List<AstNode> getNodes(String content);
 
 	@Override
 	@SneakyThrows
 	public String generate(Path path, String content) {
 
-		val nodes = getNodes(content);
+		val nodes = builder.build(content);
 
 		val cm = new JCodeModel();
 		val pkg = cm._package(path.getParent().toString().replace('/', '.').replace('\\', '.'));

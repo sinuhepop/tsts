@@ -9,27 +9,28 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import tk.spop.tsts.model.ast.AstElement;
 import tk.spop.tsts.model.ast.AstNode;
-import tk.spop.tsts.xml.XmlUtils;
 
 @RequiredArgsConstructor
 public class XmlElement implements XmlNode, AstElement {
 
 	private final Element element;
-	private final XmlNodeBuilder builder;
+	private final NodeProcessor processor;
+
+	@Getter
+	private final String name;
+
+	@Getter
+	private final boolean directive;
 
 	@Getter(lazy = true)
-	private final String name = element.getNodeName();
+	private final Map<String, String> attributes = processor.getAttributes(element, false);
 
 	@Getter(lazy = true)
-	private final Map<String, String> attributes = XmlUtils.getAttributes(element);
+	private final Map<String, String> dynamicAttributes = processor.getAttributes(element, true);
 
 	@Override
 	public List<AstNode> getChildren() {
-		return builder.build(element.getChildNodes());
-	}
-
-	public boolean isDirective() {
-		return false;
+		return processor.getList(element.getChildNodes());
 	}
 
 }

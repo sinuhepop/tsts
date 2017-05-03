@@ -4,4 +4,6 @@ public interface AstText extends AstNode {
 
 	String getText();
 
+	boolean isExpression();
+
 }

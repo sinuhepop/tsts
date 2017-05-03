@@ -9,6 +9,8 @@ public interface AstElement extends AstNode {
 
 	Map<String, String> getAttributes();
 
+	Map<String, String> getDynamicAttributes();
+
 	List<AstNode> getChildren();
 
 	boolean isDirective();

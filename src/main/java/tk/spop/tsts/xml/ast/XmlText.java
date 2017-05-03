@@ -15,4 +15,9 @@ public class XmlText implements XmlNode, AstText {
 		return node.getTextContent();
 	}
 
+	@Override
+	public boolean isExpression() {
+		return false;
+	}
+
 }

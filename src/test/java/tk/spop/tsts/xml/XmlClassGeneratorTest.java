@@ -11,7 +11,9 @@ import org.junit.Test;
 import lombok.SneakyThrows;
 import lombok.val;
 import prefix.layout;
+import tk.spop.tsts.ClassGenerator;
 import tk.spop.tsts.Constants;
+import tk.spop.tsts.DefaultClassGenerator;
 import tk.spop.tsts.ExecutionContext;
 import tk.spop.tsts.directive.DirectiveRegistry;
 import tk.spop.tsts.model.ImportDefinition;
@@ -25,14 +27,17 @@ public class XmlClassGeneratorTest {
 	private final Path source = Paths.get("src/test/resources");
 	private final Path dest = Paths.get("src/test/java");
 
-	private final XmlClassGenerator generator = new XmlClassGenerator();
+	private final ClassGenerator generator;
 
 	public XmlClassGeneratorTest() {
+		val gen = new DefaultClassGenerator();
 		val imports = new ImportDefinition();
 		imports.add(Map.class.getPackage());
 		imports.add(User.class);
-		generator.setImports(imports);
-		generator.setDirectives(DirectiveRegistry.getDefault());
+		gen.setImports(imports);
+		gen.setDirectives(DirectiveRegistry.getDefault());
+		gen.setBuilder(new XmlAstBuilder());
+		generator = gen;
 	}
 
 	@Test
@@ -54,8 +59,8 @@ public class XmlClassGeneratorTest {
 	@SneakyThrows
 	public void layout() {
 		val layout = new layout();
-		val args  = new layout.MainParams();
-		args.title="cuc";
+		val args = new layout.MainParams();
+		args.title = "cuc";
 		layout.main(new ExecutionContext(), args);
 	}
 

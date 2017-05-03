@@ -8,7 +8,10 @@ import tk.spop.tsts.ExecutionContext;
 public class userlist {
 
     public void main(ExecutionContext ctx, userlist.MainParams args) {
-        ctx.writeUnparsed("\n	<div class='list'>\n		\n	</div>\n");
+        List<User> users = args.users;
+
+        // for {status=#{iterator}}
+        ctx.writeUnparsed("\n	<div>\n		\n	</div>\n");
     }
 
     public static class MainParams {
