@@ -3,7 +3,6 @@
 	<groupId>tk.spop</groupId>
 	<artifactId>tml</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
 	<properties>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -57,6 +56,11 @@
 			<groupId>com.github.sviperll</groupId>
 			<artifactId>static-mustache</artifactId>
 			<version>0.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse</groupId>
+			<artifactId>pde</artifactId>
+			<version>3.3.0-v20070608-1300</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
